@@ -1,0 +1,34 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    .NET MAUI targets Android 8.0+ (API 26+) and iOS.
+    The full MAUI workload is installed separately via:
+      dotnet workload install maui-android
+    This csproj is a placeholder class library for the MAUI app code.
+    In a full build environment, change the Sdk to "Microsoft.NET.Sdk.Maui".
+  -->
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <ApplicationTitle>EdukasyonAI</ApplicationTitle>
+    <ApplicationId>ai.edukasyon.app</ApplicationId>
+    <ApplicationVersion>1.0.0</ApplicationVersion>
+    <!-- Minimum Android API 26 (Android 8.0) per requirements -->
+    <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">26.0</SupportedOSPlatformVersion>
+    <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">15.0</SupportedOSPlatformVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\EdukasyonAI.Application.Contracts\EdukasyonAI.Application.Contracts.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- CommunityToolkit.Mvvm for MVVM pattern with source generators -->
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
+    <!-- SQLite for offline-first local storage -->
+    <PackageReference Include="sqlite-net-pcl" Version="1.9.172" />
+  </ItemGroup>
+
+</Project>

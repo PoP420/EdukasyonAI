@@ -1,0 +1,54 @@
+## .NET build artifacts
+bin/
+obj/
+*.user
+*.suo
+.vs/
+_ReSharper*/
+*.DotSettings.user
+
+## NuGet
+packages/
+*.nupkg
+*.snupkg
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+## SQLite databases (offline dev)
+*.db
+*.db-shm
+*.db-wal
+
+## Environment / secrets
+appsettings.*.json
+!appsettings.json
+!appsettings.Development.json
+.env
+*.env
+secrets.json
+
+## macOS / Linux
+.DS_Store
+Thumbs.db
+
+## JetBrains Rider
+.idea/
+
+## VS Code
+.vscode/
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+## MAUI
+**/*.apk
+**/*.aab
+**/*.ipa
+**/*.dSYM.zip
+**/*.dSYM
+
+## Test results
+TestResults/
+coverage*/
