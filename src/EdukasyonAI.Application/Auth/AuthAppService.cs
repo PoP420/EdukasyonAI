@@ -127,14 +127,25 @@ public class AuthAppService : IAuthAppService
 
     private static bool VerifyPassword(string password, string storedHash)
     {
-        var parts = storedHash.Split(':', 2);
-        if (parts.Length != 2) return false;
+        // Format: "pbkdf2:{base64-salt}:{base64-hash}"
+        var parts = storedHash.Split(':', 3);
+        if (parts.Length != 3 || parts[0] != "pbkdf2") return false;
 
-        var salt = parts[0];
-        var expectedHash = parts[1];
-        using var sha = System.Security.Cryptography.SHA256.Create();
-        var bytes = System.Text.Encoding.UTF8.GetBytes(salt + password);
-        var computedHash = Convert.ToBase64String(sha.ComputeHash(bytes));
-        return computedHash == expectedHash;
+        var salt = Convert.FromBase64String(parts[1]);
+        var expectedHash = Convert.FromBase64String(parts[2]);
+
+        const int iterations = 100_000;
+        const int keySize = 32;
+
+        using var pbkdf2 = new System.Security.Cryptography.Rfc2898DeriveBytes(
+            password,
+            salt,
+            iterations,
+            System.Security.Cryptography.HashAlgorithmName.SHA256);
+
+        var computedHash = pbkdf2.GetBytes(keySize);
+        return System.Security.Cryptography.CryptographicOperations.FixedTimeEquals(
+            computedHash, expectedHash);
     }
 }
+

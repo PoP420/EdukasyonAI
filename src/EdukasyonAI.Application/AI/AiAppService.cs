@@ -35,9 +35,11 @@ public class AiAppService : IAiAppService
         var lesson = await _lessonRepo.GetByIdAsync(request.LessonId, cancellationToken)
             ?? throw new InvalidOperationException($"Lesson {request.LessonId} not found.");
 
+        // Sanitize user-supplied strings before logging to prevent log-injection
+        var safeLanguage = SanitizeForLog(request.Language);
         _logger.LogInformation(
             "Generating {Count} questions for lesson {LessonId} in {Language}",
-            request.Count, request.LessonId, request.Language);
+            request.Count, request.LessonId, safeLanguage);
 
         var questions = await _nemotron.GenerateQuestionsAsync(
             lesson.ContentMarkdown,
@@ -53,7 +55,20 @@ public class AiAppService : IAiAppService
         AiChatRequestDto request,
         CancellationToken cancellationToken = default)
     {
-        _logger.LogInformation("AI chat request in language={Language}", request.Language);
+        var safeLanguage = SanitizeForLog(request.Language);
+        _logger.LogInformation("AI chat request in language={Language}", safeLanguage);
         return await _nemotron.ChatAsync(request, cancellationToken);
+    }
+
+    /// <summary>
+    /// Strips newlines and other control characters from user-supplied strings
+    /// before they are written to log entries, preventing log-injection attacks.
+    /// </summary>
+    private static string SanitizeForLog(string? value)
+    {
+        if (string.IsNullOrEmpty(value)) return string.Empty;
+        return value.Replace("\r", string.Empty)
+                    .Replace("\n", string.Empty)
+                    .Replace("\t", string.Empty);
     }
 }

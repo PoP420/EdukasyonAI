@@ -100,5 +100,5 @@ public class ChatMessage
 {
     public bool IsFromAi { get; set; }
     public string Text { get; set; } = string.Empty;
-    public DateTime Timestamp { get; set; } = DateTime.Now;
+    public DateTime Timestamp { get; set; } = DateTime.UtcNow;
 }

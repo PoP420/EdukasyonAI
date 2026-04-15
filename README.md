@@ -49,26 +49,28 @@ EdukasyonAI/
 - PostgreSQL 14+ (for cloud database)
 - NVIDIA API key (for Nemotron cloud inference)
 
-### 1. Configure the API Host
+### 1. Configure Secrets (never commit real secrets)
 
-Edit `src/EdukasyonAI.HttpApi.Host/appsettings.Development.json`:
+Use **dotnet user-secrets** (recommended for local development):
 
-```json
-{
-  "ConnectionStrings": {
-    "PostgreSQL": "Host=localhost;Database=edukasyon_ai_dev;Username=postgres;Password=yourpassword"
-  },
-  "Jwt": {
-    "Key": "your-strong-secret-key-at-least-32-characters",
-    "Issuer": "EdukasyonAI",
-    "Audience": "EdukasyonAI.Clients"
-  },
-  "Nemotron": {
-    "ApiKey": "your-nvidia-api-key",
-    "Model": "nvidia/nemotron-nano-8b-instruct"
-  }
-}
+```bash
+cd src/EdukasyonAI.HttpApi.Host
+
+dotnet user-secrets set "Jwt:Key" "your-strong-secret-key-at-least-32-characters"
+dotnet user-secrets set "ConnectionStrings:PostgreSQL" "Host=localhost;Database=edukasyon_ai_dev;Username=postgres;Password=yourpassword"
+dotnet user-secrets set "Nemotron:ApiKey" "your-nvidia-api-key"
 ```
+
+For production, set environment variables:
+
+```bash
+export EdukasyonAI__Jwt__Key="your-strong-production-key"
+export EdukasyonAI__Nemotron__ApiKey="your-nvidia-api-key"
+export EdukasyonAI__ConnectionStrings__PostgreSQL="Host=...;Database=...;Username=...;Password=..."
+```
+
+> ⚠️ **Never commit real secrets to source control.**
+> The values in `appsettings.json` are placeholder strings only.
 
 ### 2. Run Database Migrations
 
@@ -82,7 +84,7 @@ dotnet run
 ```bash
 cd src/EdukasyonAI.HttpApi.Host
 dotnet run
-# Swagger UI: https://localhost:5001
+# Swagger UI: https://localhost:7131
 ```
 
 ### 4. Start the Admin Dashboard
@@ -90,7 +92,7 @@ dotnet run
 ```bash
 cd src/EdukasyonAI.Web
 dotnet run
-# Open: https://localhost:5003/teacher/dashboard
+# Open: https://localhost:7052/teacher/dashboard
 ```
 
 ### 5. Run Tests

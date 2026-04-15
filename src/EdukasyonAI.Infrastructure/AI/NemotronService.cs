@@ -178,8 +178,16 @@ Do NOT discuss violence, adult content, or topics unrelated to learning.
         {
             // Strip markdown fences if present
             var json = raw.Trim();
-            if (json.StartsWith("```")) json = json[json.IndexOf('[')..];
-            if (json.EndsWith("```")) json = json[..json.LastIndexOf(']')];
+            if (json.StartsWith("```"))
+            {
+                var start = json.IndexOf('[');
+                if (start >= 0) json = json[start..];
+            }
+            if (json.EndsWith("```"))
+            {
+                var end = json.LastIndexOf(']');
+                if (end >= 0) json = json[..(end + 1)];
+            }
 
             var items = JsonSerializer.Deserialize<List<JsonElement>>(json,
                 new JsonSerializerOptions { PropertyNameCaseInsensitive = true });

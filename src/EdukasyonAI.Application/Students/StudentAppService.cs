@@ -171,15 +171,27 @@ public class StudentAppService : IStudentAppService
     };
 
     /// <summary>
-    /// Minimal BCrypt-style password hashing using SHA-256 + salt.
-    /// In production, replace with a dedicated BCrypt/Argon2 library.
+    /// Hashes a password using PBKDF2-HMAC-SHA256 (100 000 iterations, 32-byte key).
+    /// Format stored: "pbkdf2:{base64-salt}:{base64-hash}"
+    /// This is the same algorithm used by ASP.NET Core Identity v3.
     /// </summary>
     private static string BCryptHash(string password)
     {
-        var salt = Guid.NewGuid().ToString("N");
-        using var sha = System.Security.Cryptography.SHA256.Create();
-        var bytes = System.Text.Encoding.UTF8.GetBytes(salt + password);
-        var hash = Convert.ToBase64String(sha.ComputeHash(bytes));
-        return $"{salt}:{hash}";
+        const int saltSize = 16;
+        const int keySize = 32;
+        const int iterations = 100_000;
+
+        var salt = new byte[saltSize];
+        System.Security.Cryptography.RandomNumberGenerator.Fill(salt);
+
+        using var pbkdf2 = new System.Security.Cryptography.Rfc2898DeriveBytes(
+            password,
+            salt,
+            iterations,
+            System.Security.Cryptography.HashAlgorithmName.SHA256);
+
+        var hash = pbkdf2.GetBytes(keySize);
+        return $"pbkdf2:{Convert.ToBase64String(salt)}:{Convert.ToBase64String(hash)}";
     }
 }
+
