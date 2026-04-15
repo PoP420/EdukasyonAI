@@ -1,0 +1,176 @@
+@page "/teacher/dashboard"
+@rendermode InteractiveServer
+@using EdukasyonAI.Application.Contracts.Students.Dtos
+@inject HttpClient Http
+@inject ILogger<TeacherDashboard> Logger
+
+<PageTitle>Teacher Dashboard — EdukasyonAI</PageTitle>
+
+<div class="container-fluid py-4">
+    <h1 class="h3 mb-4">
+        <span class="text-primary">📚</span> Teacher Dashboard
+        <small class="text-muted fs-6 ms-2">EdukasyonAI — DepEd K-12</small>
+    </h1>
+
+    @if (isLoading)
+    {
+        <div class="d-flex justify-content-center py-5">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+    }
+    else if (!string.IsNullOrEmpty(errorMessage))
+    {
+        <div class="alert alert-warning">
+            <strong>⚠️ @errorMessage</strong>
+        </div>
+    }
+    else
+    {
+        <!-- Summary Cards -->
+        <div class="row g-3 mb-4">
+            <div class="col-sm-6 col-xl-3">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body d-flex align-items-center">
+                        <div class="display-5 me-3">👩‍🎓</div>
+                        <div>
+                            <p class="mb-0 text-muted small">Total Students</p>
+                            <h4 class="mb-0">@students.Count</h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-xl-3">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body d-flex align-items-center">
+                        <div class="display-5 me-3">🎯</div>
+                        <div>
+                            <p class="mb-0 text-muted small">Avg. Mastery</p>
+                            <h4 class="mb-0">@(students.Count > 0 ? (students.Average(s => s.OverallMasteryScore) * 100).ToString("0") + "%" : "—")</h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-xl-3">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body d-flex align-items-center">
+                        <div class="display-5 me-3">🔥</div>
+                        <div>
+                            <p class="mb-0 text-muted small">Active Streaks</p>
+                            <h4 class="mb-0">@students.Count(s => s.CurrentStreak > 0)</h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-xl-3">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body d-flex align-items-center">
+                        <div class="display-5 me-3">⭐</div>
+                        <div>
+                            <p class="mb-0 text-muted small">Top Points</p>
+                            <h4 class="mb-0">@(students.Count > 0 ? students.Max(s => s.TotalPointsEarned) : 0)</h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Student Progress Table -->
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">Student Progress</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Name</th>
+                                <th>Grade</th>
+                                <th>Mastery</th>
+                                <th>Streak</th>
+                                <th>Points</th>
+                                <th>Last Active</th>
+                                <th>Sync</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var student in students)
+                            {
+                                <tr>
+                                    <td>@student.FullName</td>
+                                    <td>Grade @((int)student.GradeLevel)</td>
+                                    <td>
+                                        <div class="progress" style="width: 80px; height: 8px;">
+                                            <div class="progress-bar @GetMasteryClass(student.OverallMasteryScore)"
+                                                 style="width: @(student.OverallMasteryScore * 100)%">
+                                            </div>
+                                        </div>
+                                        <small>@((student.OverallMasteryScore * 100).ToString("0"))%</small>
+                                    </td>
+                                    <td>@(student.CurrentStreak > 0 ? $"🔥 {student.CurrentStreak}" : "—")</td>
+                                    <td>⭐ @student.TotalPointsEarned</td>
+                                    <td>@(student.LastActivityAt?.ToString("MMM dd") ?? "—")</td>
+                                    <td>
+                                        <span class="badge @GetSyncBadgeClass(student.SyncStatus)">
+                                            @student.SyncStatus
+                                        </span>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    private List<StudentProfileDto> students = new();
+    private bool isLoading = true;
+    private string errorMessage = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            // In production, fetch from authenticated API endpoint
+            // For demo, we display mock data
+            students = GetMockStudents();
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Failed to load teacher dashboard");
+            errorMessage = "Unable to load student data. Please try again.";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private static string GetMasteryClass(float mastery) => mastery switch
+    {
+        >= 0.75f => "bg-success",
+        >= 0.5f => "bg-warning",
+        _ => "bg-danger"
+    };
+
+    private static string GetSyncBadgeClass(EdukasyonAI.Domain.Shared.Enums.SyncStatus sync) => sync switch
+    {
+        EdukasyonAI.Domain.Shared.Enums.SyncStatus.Synced => "bg-success",
+        EdukasyonAI.Domain.Shared.Enums.SyncStatus.PendingUpload => "bg-warning text-dark",
+        EdukasyonAI.Domain.Shared.Enums.SyncStatus.Failed => "bg-danger",
+        _ => "bg-secondary"
+    };
+
+    private static List<StudentProfileDto> GetMockStudents() => new()
+    {
+        new StudentProfileDto { FullName = "Maria Santos", GradeLevel = EdukasyonAI.Domain.Shared.Enums.GradeLevel.Grade5, OverallMasteryScore = 0.85f, CurrentStreak = 7, TotalPointsEarned = 1250, LastActivityAt = DateTime.UtcNow.AddHours(-2), SyncStatus = EdukasyonAI.Domain.Shared.Enums.SyncStatus.Synced },
+        new StudentProfileDto { FullName = "Juan dela Cruz", GradeLevel = EdukasyonAI.Domain.Shared.Enums.GradeLevel.Grade6, OverallMasteryScore = 0.62f, CurrentStreak = 3, TotalPointsEarned = 890, LastActivityAt = DateTime.UtcNow.AddDays(-1), SyncStatus = EdukasyonAI.Domain.Shared.Enums.SyncStatus.PendingUpload },
+        new StudentProfileDto { FullName = "Ana Reyes", GradeLevel = EdukasyonAI.Domain.Shared.Enums.GradeLevel.Grade4, OverallMasteryScore = 0.45f, CurrentStreak = 0, TotalPointsEarned = 420, LastActivityAt = DateTime.UtcNow.AddDays(-3), SyncStatus = EdukasyonAI.Domain.Shared.Enums.SyncStatus.Synced },
+        new StudentProfileDto { FullName = "Pedro Garcia", GradeLevel = EdukasyonAI.Domain.Shared.Enums.GradeLevel.Grade7, OverallMasteryScore = 0.78f, CurrentStreak = 12, TotalPointsEarned = 2100, LastActivityAt = DateTime.UtcNow.AddHours(-5), SyncStatus = EdukasyonAI.Domain.Shared.Enums.SyncStatus.Synced },
+    };
+}

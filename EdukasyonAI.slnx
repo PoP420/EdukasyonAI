@@ -1,0 +1,18 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/EdukasyonAI.Application.Contracts/EdukasyonAI.Application.Contracts.csproj" />
+    <Project Path="src/EdukasyonAI.Application/EdukasyonAI.Application.csproj" />
+    <Project Path="src/EdukasyonAI.DbMigrator/EdukasyonAI.DbMigrator.csproj" />
+    <Project Path="src/EdukasyonAI.Domain.Shared/EdukasyonAI.Domain.Shared.csproj" />
+    <Project Path="src/EdukasyonAI.Domain/EdukasyonAI.Domain.csproj" />
+    <Project Path="src/EdukasyonAI.HttpApi.Host/EdukasyonAI.HttpApi.Host.csproj" />
+    <Project Path="src/EdukasyonAI.HttpApi/EdukasyonAI.HttpApi.csproj" />
+    <Project Path="src/EdukasyonAI.Infrastructure/EdukasyonAI.Infrastructure.csproj" />
+    <Project Path="src/EdukasyonAI.Maui/EdukasyonAI.Maui.csproj" />
+    <Project Path="src/EdukasyonAI.Web/EdukasyonAI.Web.csproj" />
+  </Folder>
+  <Folder Name="/test/">
+    <Project Path="test/EdukasyonAI.Application.Tests/EdukasyonAI.Application.Tests.csproj" />
+    <Project Path="test/EdukasyonAI.Domain.Tests/EdukasyonAI.Domain.Tests.csproj" />
+  </Folder>
+</Solution>
